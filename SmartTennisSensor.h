@@ -2,7 +2,6 @@
 #define _SMART_TENNIS_SENSOR_H_
 
 #include "SensorData.h"
-#include <cstddef>
 
 #define DEVICE_NAME "Smart Tennis Sensor"
 // TODO: #define PAIR_BUTTON once we get the necessary hardware
