@@ -1,8 +1,8 @@
 #ifndef _SENSOR_DATA_H_
 #define _SENSOR_DATA_H_
 
-#include <cstddef.h>
 #include "Vector3D.h"
+#include <cstddef>
 
 #define MAX_CHARACTERISTIC_SIZE 512
 
