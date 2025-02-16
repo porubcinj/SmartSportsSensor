@@ -38,6 +38,7 @@ void setup() {
 
   /* Set BLE information */
   BLE.setDeviceName(DEVICE_NAME);
+  BLE.setLocalName(LOCAL_NAME);
   service.addCharacteristic(characteristic);
   BLE.addService(service);
   characteristic.writeValue(sensorDataBuffer.characteristic);
@@ -126,22 +127,14 @@ void pairedState() {
     sensorData.milliseconds = millis();
 
     /* Copy sensor data to buffer */
-    const size_t numBytesToWrite = sizeof(sensorData);
-    size_t numBytesWritten = 0;
-    while (numBytesWritten < numBytesToWrite) {
-      size_t count = min(numBytesToWrite - numBytesWritten, sizeof(sensorDataBuffer.characteristic.data) - sensorDataBuffer.i);
-      memcpy(&sensorDataBuffer.characteristic.data[sensorDataBuffer.i], ((unsigned char*)&sensorData) + numBytesWritten, count);
-      sensorDataBuffer.i += count;
-      numBytesWritten += count;
+    sensorDataBuffer.characteristic.data[sensorDataBuffer.i++] = sensorData;
 
-      /* Write buffer to characteristic if buffer is full */
-      if (sensorDataBuffer.i >= sizeof(sensorDataBuffer.characteristic.data)) {
-        while (!characteristic.writeValue(sensorDataBuffer.characteristic)) {
-          Serial.println("Failed to write value to characteristic");
-          delay(5000);
-        }
-        sensorDataBuffer.i = 0;
+    /* Write buffer to characteristic if buffer is full */
+    if (sensorDataBuffer.i >= sizeof(sensorDataBuffer.characteristic.data) / sizeof(sensorDataBuffer.characteristic.data[0])) {
+      if (!characteristic.writeValue(sensorDataBuffer.characteristic)) {
+        Serial.println("Failed to write value to characteristic");
       }
+      sensorDataBuffer.i = 0;
     }
   }
 }
