@@ -5,6 +5,7 @@ on:
     branches: [ 'main' ]
     paths:
       - 'SmartTennisSensor/**'
+  workflow_dispatch:
 
 jobs:
   deploy:
