@@ -4,7 +4,11 @@
 #include "Vector3D.h"
 #include <cstddef>
 
-#define MAX_CHARACTERISTIC_SIZE 512
+/* TODO: 244 bytes are transmittable out of the 512 for a BLE characteristic.
+ * The number 244 was determined experimentally.
+ * 244 / sizeof(SensorData) = 244 / 28 = 8, so we can only send 224 bytes of aligned entries per notification.
+ * Ideally, we would be able to determine the number of entries programmatically. */
+#define NUM_SENSOR_DATA_ENTRIES 8
 
 /* 4 + 12 + 12 = 28 bytes */
 struct SensorData {
@@ -14,7 +18,7 @@ struct SensorData {
 };
 
 struct SensorDataCharacteristic {
-  unsigned char data[MAX_CHARACTERISTIC_SIZE];
+  SensorData data[NUM_SENSOR_DATA_ENTRIES];
 };
 
 struct SensorDataBuffer {

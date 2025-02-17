@@ -3,7 +3,8 @@
 
 #include "SensorData.h"
 
-#define DEVICE_NAME "Smart Tennis Sensor"
+#define DEVICE_NAME "Arduino"
+#define LOCAL_NAME "Smart Tennis Sensor"
 // TODO: #define PAIR_BUTTON once we get the necessary hardware
 #define PAIR_INTERVAL_MS 30000
 #define PAIR_LED LEDB
