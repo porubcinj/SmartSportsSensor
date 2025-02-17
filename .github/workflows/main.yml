@@ -1,0 +1,33 @@
+name: Deploy Website
+
+on:
+  push:
+    branches: [ 'main' ]
+    paths:
+      - 'SmartTennisSensor/**'
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: 'SmartTennisSensor'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          cache: 'npm'
+          cache-dependency-path: 'SmartTennisSensor/package-lock.json'
+      - run: npm ci
+      - run: npm run predeploy
+      - run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
+          npm run deploy
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
