@@ -7,6 +7,10 @@ on:
       - 'SmartTennisSensor/**'
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: 'SmartTennisSensor'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
