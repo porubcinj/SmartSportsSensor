@@ -22,7 +22,7 @@ const App = () => {
 
   return (
     <>
-      <h1>Smart Tennis Sensor</h1>
+      <h1>Smart Sports Sensor</h1>
       {!pairedDevice ? (
         <Button
           variant='contained'

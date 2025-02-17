@@ -1,8 +1,8 @@
 #include <Arduino_BMI270_BMM150.h>
 #include <ArduinoBLE.h>
 
+#include "BLE.h"
 #include "SensorData.h"
-#include "SmartTennisSensor.h"
 #include "Stopwatch.h"
 
 State state = UNPAIRED;

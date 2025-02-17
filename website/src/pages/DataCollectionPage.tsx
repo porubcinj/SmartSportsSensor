@@ -112,7 +112,7 @@ export const DataCollectionPage = () => {
 
   return (
     <>
-      <h1>Smart Tennis Sensor</h1>
+      <h1>Smart Sports Sensor</h1>
       <h2>{formatTime(elapsedSeconds)}</h2>
       <Button
         variant='contained'

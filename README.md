@@ -1,4 +1,4 @@
-# CSE 60685 Design Project - Smart Tennis Sensor
+# CSE 60685 Design Project - Smart Sports Sensor
 
 ## Requirements
 

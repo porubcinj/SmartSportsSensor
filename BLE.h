@@ -1,10 +1,10 @@
-#ifndef _SMART_TENNIS_SENSOR_H_
-#define _SMART_TENNIS_SENSOR_H_
+#ifndef _BLE_H_
+#define _BLE_H_
 
 #include "SensorData.h"
 
 #define DEVICE_NAME "Arduino"
-#define LOCAL_NAME "Smart Tennis Sensor"
+#define LOCAL_NAME "Smart Sports Sensor"
 // TODO: #define PAIR_BUTTON once we get the necessary hardware
 #define PAIR_INTERVAL_MS 30000
 #define PAIR_LED LEDB

@@ -4,12 +4,12 @@ on:
   push:
     branches: [ 'main' ]
     paths:
-      - 'SmartTennisSensor/**'
+      - 'website/**'
   workflow_dispatch:
 
 defaults:
   run:
-    working-directory: 'SmartTennisSensor'
+    working-directory: 'website'
 
 jobs:
   deploy:
@@ -21,12 +21,12 @@ jobs:
         with:
           node-version: 22.x
           cache: 'npm'
-          cache-dependency-path: 'SmartTennisSensor/package-lock.json'
+          cache-dependency-path: 'website/package-lock.json'
       - run: npm ci
       - run: npm run predeploy
       - run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "github-actions@github.com"
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
           git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
           npm run deploy
         env:

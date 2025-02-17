@@ -1,8 +1,8 @@
 #ifndef _SENSOR_DATA_H_
 #define _SENSOR_DATA_H_
 
-#include "Vector3D.h"
 #include <cstddef>
+#include "Vector3D.h"
 
 /* TODO: 244 bytes are transmittable out of the 512 for a BLE characteristic.
  * The number 244 was determined experimentally.
