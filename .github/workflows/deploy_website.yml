@@ -11,11 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js 22
+      - name: Use Node.js 22.x
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.x
           cache: 'npm'
       - run: npm ci
+        working-directory: SmartTennisSensor
       - run: npm run predeploy
+        working-directory: SmartTennisSensor
       - run: npm run deploy
+        working-directory: SmartTennisSensor
