@@ -7,6 +7,10 @@ on:
       - 'SmartTennisSensor/**'
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: 'SmartTennisSensor'
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -18,8 +22,5 @@ jobs:
           node-version: 22.x
           cache: 'npm'
       - run: npm ci
-        working-directory: SmartTennisSensor
       - run: npm run predeploy
-        working-directory: SmartTennisSensor
       - run: npm run deploy
-        working-directory: SmartTennisSensor
