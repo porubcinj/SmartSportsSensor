@@ -1,6 +1,6 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { HashRouter, Routes, Route } from 'react-router';
+import { BrowserRouter, Routes, Route } from 'react-router';
 import { BluetoothProvider } from './BluetoothContext/BluetoothProvider.tsx';
 import { BluetoothUnavailablePage } from './pages/BluetoothUnavailablePage.tsx';
 import { DataInferencePage } from './pages/DataInferencePage.tsx';
@@ -12,7 +12,7 @@ const root = document.getElementById('root');
 if (root) {
   createRoot(root).render(
     <StrictMode>
-      <HashRouter>
+      <BrowserRouter>
         <BluetoothProvider>
           <Routes>
             <Route path='/' element={<App />} />
@@ -21,7 +21,7 @@ if (root) {
             <Route path='bluetooth-unavailable' element={<BluetoothUnavailablePage />} />
           </Routes>
         </BluetoothProvider>
-      </HashRouter>
+      </BrowserRouter>
     </StrictMode>
   );
 }
