@@ -1,16 +1,19 @@
 #include <Arduino_BMI270_BMM150.h>
 #include <ArduinoBLE.h>
 
-#include "BLE.h"
+#include "Ble.h"
+#include "Model.h"
 #include "SensorData.h"
 #include "Stopwatch.h"
 
-State state = UNPAIRED;
+State state = State::Unpaired;
 Stopwatch<unsigned long> stopwatchMillis(millis);
-SensorDataBuffer sensorDataBuffer = {0};
+SensorDataBuffer sensorData = {0};
+InferenceCharacteristic inference = {Stroke::Other, Spin::Other};
 BLEDevice central = BLEDevice();
 BLEService service(SERVICE_UUID);
-BLETypedCharacteristic<SensorDataCharacteristic> characteristic(CHARACTERISTIC_UUID, BLERead | BLENotify | BLEEncryption);
+BLETypedCharacteristic<SensorDataCharacteristic> sensorDataCharacteristic(SENSOR_DATA_CHARACTERISTIC_UUID, BLERead | BLENotify | BLEEncryption);
+BLETypedCharacteristic<InferenceCharacteristic> inferenceCharacteristic(INFERENCE_CHARACTERISTIC_UUID, BLERead | BLENotify | BLEEncryption);
 
 void setup() {
   /* Initialize Universal Asynchronous Receiver-Transmitter (UART) */
@@ -39,9 +42,11 @@ void setup() {
   /* Set BLE information */
   BLE.setDeviceName(DEVICE_NAME);
   BLE.setLocalName(LOCAL_NAME);
-  service.addCharacteristic(characteristic);
+  service.addCharacteristic(sensorDataCharacteristic);
+  service.addCharacteristic(inferenceCharacteristic);
   BLE.addService(service);
-  characteristic.writeValue(sensorDataBuffer.characteristic);
+  sensorDataCharacteristic.writeValue(sensorData.characteristic);
+  inferenceCharacteristic.writeValue(inference);
 
   /* Prevent pairing until PAIR_BUTTON is pressed */
   BLE.setPairable(false);
@@ -51,9 +56,8 @@ void setup() {
 }
 
 void loop() {
-  if (state < NUM_STATES) {
-    stateFunctions[state]();
-  }
+  const unsigned int nextState = static_cast<unsigned int>(state);
+  stateFunctions[nextState]();
 }
 
 void unpairedState() {
@@ -64,7 +68,7 @@ void unpairedState() {
     BLE.setPairable(Pairable::ONCE);
     Serial.println("Pairing enabled");
 
-    state = PAIRING;
+    state = State::Pairing;
   #ifdef PAIR_BUTTON
   }
   #endif
@@ -78,7 +82,7 @@ void pairingState() {
     Serial.println(central.address());
     digitalWrite(PAIR_LED, PAIR_LED_ON);
 
-    state = PAIRED;
+    state = State::Paired;
     return;
   }
 
@@ -88,7 +92,7 @@ void pairingState() {
     Serial.println("Pairing disabled");
     digitalWrite(PAIR_LED, PAIR_LED_OFF);
 
-    state = UNPAIRED;
+    state = State::Unpaired;
     return;
   }
 
@@ -104,37 +108,46 @@ void pairedState() {
     Serial.println("Pairing disabled");
     digitalWrite(PAIR_LED, PAIR_LED_OFF);
 
-    state = UNPAIRED;
+    state = State::Unpaired;
     return;
   }
 
   /* Store sensor data if available and if we read the data without error */
-  SensorData sensorData;
+  SensorData newSensorData;
   if (
     IMU.accelerationAvailable() &&
     IMU.gyroscopeAvailable() &&
     IMU.readAcceleration(
-      sensorData.acceleration.x,
-      sensorData.acceleration.y,
-      sensorData.acceleration.z
+      newSensorData.acceleration.x,
+      newSensorData.acceleration.y,
+      newSensorData.acceleration.z
     ) &&
     IMU.readGyroscope(
-      sensorData.gyroscope.x,
-      sensorData.gyroscope.y,
-      sensorData.gyroscope.z
+      newSensorData.gyroscope.x,
+      newSensorData.gyroscope.y,
+      newSensorData.gyroscope.z
     )
   ) {
-    sensorData.milliseconds = millis();
+    newSensorData.milliseconds = millis();
 
-    /* Copy sensor data to buffer */
-    sensorDataBuffer.characteristic.data[sensorDataBuffer.i++] = sensorData;
+    /* Copy new sensor data to buffer */
+    sensorData.characteristic.data[sensorData.i++] = newSensorData;
 
     /* Write buffer to characteristic if buffer is full */
-    if (sensorDataBuffer.i >= sizeof(sensorDataBuffer.characteristic.data) / sizeof(sensorDataBuffer.characteristic.data[0])) {
-      if (!characteristic.writeValue(sensorDataBuffer.characteristic)) {
-        Serial.println("Failed to write value to characteristic");
+    if (sensorData.i >= sizeof(sensorData.characteristic.data) / sizeof(sensorData.characteristic.data[0])) {
+      if (!sensorDataCharacteristic.writeValue(sensorData.characteristic)) {
+        Serial.println("Failed to write value to sensor data characteristic");
       }
-      sensorDataBuffer.i = 0;
+      sensorData.i = 0;
+    }
+
+    /* TODO: Pass data to model and update prediction. Below is just an example */
+    if (micros() % 2000000 < 20000) {
+      inference.stroke = static_cast<Stroke>(random(static_cast<unsigned int>(Stroke::Count)));
+      inference.spin = static_cast<Spin>(random(static_cast<unsigned int>(Spin::Count)));
+      if (!inferenceCharacteristic.writeValue(inference)) {
+        Serial.println("Failed to write value to inference characteristic");
+      }
     }
   }
 }
