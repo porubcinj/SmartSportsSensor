@@ -11,20 +11,21 @@
 #define PAIR_LED_OFF (PAIR_LED_ON == LOW ? HIGH : LOW)
 #define PAIR_LED_ON LOW
 #define SERVICE_UUID "00000000-0000-0000-0000-000000000000"
-#define CHARACTERISTIC_UUID "00000000-0000-0000-0000-000000000000"
+#define SENSOR_DATA_CHARACTERISTIC_UUID "00000000-0000-0000-0000-000000000000"
+#define INFERENCE_CHARACTERISTIC_UUID "00000000-0000-0000-0000-000000000001"
 
-enum State {
-  UNPAIRED,
-  PAIRING,
-  PAIRED,
-  NUM_STATES,
+enum class State : unsigned int {
+  Unpaired,
+  Pairing,
+  Paired,
+  Count,
 };
 
 void unpairedState();
 void pairingState();
 void pairedState();
 
-void (*const stateFunctions[NUM_STATES])() = {
+void (*const stateFunctions[static_cast<unsigned int>(State::Count)])() = {
   unpairedState,
   pairingState,
   pairedState,
