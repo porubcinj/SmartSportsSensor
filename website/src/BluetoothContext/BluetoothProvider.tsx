@@ -47,6 +47,9 @@ export const BluetoothProvider = ({ children } : PropsWithChildren) => {
         {
           name: 'Arduino',
         },
+        {
+          name: 'Smart Sports Sensor',
+        },
       ],
       optionalServices: [
         '00000000-0000-0000-0000-000000000000',
