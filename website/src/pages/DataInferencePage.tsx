@@ -1,15 +1,22 @@
 import { useState, useEffect, useRef } from 'react'
-import { Button } from '@mui/material';
+import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { useBluetooth } from '../BluetoothContext/useBluetooth';
+import { useCharacteristic } from '../hooks/useCharacteristic';
+import { SensorDataPreviewTable } from '../components/SensorDataPreviewTable';
+import { useCharacteristicNotifications } from '../hooks/useCharacteristicNotifications';
+import { formatTime } from '../utils/formatTime';
+import { useSensorData } from '../hooks/useSensorData';
+import { SensorDataRow } from '../models/SensorDataRow';
 
 export const DataInferencePage = () => {
   const { pairedDevice } = useBluetooth();
-  const [characteristic, setCharacteristic] = useState<BluetoothRemoteGATTCharacteristic | null>(null);
   const [isPaused, setIsPaused] = useState(true);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [prediction, setPrediction] = useState<DataView | null>(null);
   const elapsedMillis = useRef<number>(0);
   const elapsedPaused = useRef<number>(Date.now());
+  const [sensorDataPreview, setSensorDataPreview] = useState<SensorDataRow[]>([]);
+  const sensorDataRef = useRef<SensorDataRow[]>([]);
   const inferenceDataRef = useRef<{
     buffer: Uint8Array;
     length: number;
@@ -24,7 +31,7 @@ export const DataInferencePage = () => {
     Overhead,
     Forehand,
   };
-  
+
   enum Spin {
     Other = 0,
     Slice,
@@ -33,25 +40,22 @@ export const DataInferencePage = () => {
   };
 
   /* Get and set characteristic */
-  useEffect(() => {
-    if (!pairedDevice) {
-      return;
-    }
+  const sensorDataCharacteristic = useCharacteristic(
+    pairedDevice,
+    '00000000-0000-0000-0000-000000000000',
+    '00000000-0000-0000-0000-000000000000',
+  );
+  const inferenceCharacteristic = useCharacteristic(
+    pairedDevice,
+    '00000000-0000-0000-0000-000000000000',
+    '00000000-0000-0000-0000-000000000001',
+  );
 
-    pairedDevice.getPrimaryService('00000000-0000-0000-0000-000000000000')
-      .then(service => {
-        service.getCharacteristic('00000000-0000-0000-0000-000000000001')
-          .then(characteristic => {
-            setCharacteristic(characteristic);
-          })
-          .catch(console.error);
-      })
-      .catch(console.error);
-  }, [pairedDevice]);
+  useSensorData(sensorDataCharacteristic, elapsedMillis, elapsedPaused, setElapsedSeconds, sensorDataRef, setSensorDataPreview);
 
   /* Set up event listener for notifications */
   useEffect(() => {
-    if (!characteristic) {
+    if (!inferenceCharacteristic) {
       return;
     }
 
@@ -88,32 +92,14 @@ export const DataInferencePage = () => {
       setPrediction(value);
     };
 
-    characteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+    inferenceCharacteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
 
-    return () => { characteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged); };
-  }, [characteristic]);
+    return () => { inferenceCharacteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged); };
+  }, [inferenceCharacteristic]);
 
   /* Stop/start notifications based on pause/resume button */
-  useEffect(() => {
-    if (!characteristic) {
-      return;
-    }
-
-    if (isPaused) {
-      characteristic.stopNotifications()
-        .catch(console.error);
-    } else {
-      characteristic.startNotifications()
-        .catch(console.error);
-    }
-  }, [characteristic, isPaused]);
-
-  const formatTime = (totalSeconds: number) => {
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const secs = totalSeconds % 60;
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-  };
+  useCharacteristicNotifications(sensorDataCharacteristic, isPaused);
+  useCharacteristicNotifications(inferenceCharacteristic, isPaused);
 
   const handleDownload = () => {
     const { buffer, length } = inferenceDataRef.current;
@@ -144,38 +130,6 @@ export const DataInferencePage = () => {
         {isPaused ? (inferenceDataRef.current.length > 0 ? 'Resume': 'Begin') : 'Pause'}
       </Button>
       <br /><br />
-      <h3>Prediction</h3>
-      {prediction !== null && (
-        <table
-          border={1}
-          style={{
-            width: '100%',
-            borderCollapse: 'collapse',
-          }}
-        >
-          <colgroup>
-            <col className='Stroke' width='50%' />
-            <col className='Spin' width='50%' />
-          </colgroup>
-          <thead>
-            <tr>
-              <th scope='Stroke'>
-                Stroke
-              </th>
-              <th scope='Spin'>
-                Spin
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>{Stroke[prediction.getUint32(0, true)]}</td>
-              <td>{Spin[prediction.getUint32(4, true)]}</td>
-            </tr>
-          </tbody>
-        </table>
-      )}
-      <br /><br />
       <Button
         variant='contained'
         onClick={handleDownload}
@@ -183,6 +137,27 @@ export const DataInferencePage = () => {
       >
         Download Inference Data
       </Button>
+      <br /><br />
+      <TableContainer component={Paper}>
+        <Table stickyHeader size='small' style={{ tableLayout: 'fixed' }}>
+          <TableHead>
+            <TableRow>
+              <TableCell>Stroke</TableCell>
+              <TableCell>Spin</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              {prediction !== null && <>
+                <TableCell>{Stroke[prediction.getUint32(0, true)]}</TableCell>
+                <TableCell>{Spin[prediction.getUint32(4, true)]}</TableCell>
+              </>}
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <br /><br />
+      <SensorDataPreviewTable sensorDataPreview={sensorDataPreview} />
     </>
   );
 };
