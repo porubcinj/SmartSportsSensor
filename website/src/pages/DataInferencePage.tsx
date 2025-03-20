@@ -7,23 +7,16 @@ import { useCharacteristicNotifications } from '../hooks/useCharacteristicNotifi
 import { formatTime } from '../utils/formatTime';
 import { useSensorData } from '../hooks/useSensorData';
 import { SensorDataRow } from '../models/SensorDataRow';
+import { useInferenceData } from '../hooks/useInferenceData';
 
 export const DataInferencePage = () => {
   const { pairedDevice } = useBluetooth();
   const [isPaused, setIsPaused] = useState(true);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [sensorDataPreview, setSensorDataPreview] = useState<SensorDataRow[]>([]);
   const [prediction, setPrediction] = useState<DataView | null>(null);
   const elapsedMillis = useRef<number>(0);
   const elapsedPaused = useRef<number>(Date.now());
-  const [sensorDataPreview, setSensorDataPreview] = useState<SensorDataRow[]>([]);
-  const sensorDataRef = useRef<SensorDataRow[]>([]);
-  const inferenceDataRef = useRef<{
-    buffer: Uint8Array;
-    length: number;
-  }>({
-    buffer: new Uint8Array(8),
-    length: 0,
-  });
 
   enum Stroke {
     Other = 0,
@@ -51,7 +44,8 @@ export const DataInferencePage = () => {
     '00000000-0000-0000-0000-000000000001',
   );
 
-  useSensorData(sensorDataCharacteristic, elapsedMillis, elapsedPaused, setElapsedSeconds, sensorDataRef, setSensorDataPreview);
+  useSensorData(sensorDataCharacteristic, setSensorDataPreview, setElapsedSeconds, elapsedMillis, elapsedPaused);
+  const inferenceDataRef = useInferenceData(inferenceCharacteristic, setPrediction, setElapsedSeconds, elapsedMillis, elapsedPaused);
 
   /* Set up event listener for notifications */
   useEffect(() => {

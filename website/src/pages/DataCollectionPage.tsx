@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Button } from '@mui/material';
 import { useBluetooth } from '../BluetoothContext/useBluetooth';
 import { SensorDataRow } from '../models/SensorDataRow';
@@ -12,10 +12,9 @@ export const DataCollectionPage = () => {
   const { pairedDevice } = useBluetooth();
   const [isPaused, setIsPaused] = useState(true);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [sensorDataPreview, setSensorDataPreview] = useState<SensorDataRow[]>([]);
   const elapsedMillis = useRef<number>(0);
   const elapsedPaused = useRef<number>(Date.now());
-  const [sensorDataPreview, setSensorDataPreview] = useState<SensorDataRow[]>([]);
-  const sensorDataRef = useRef<SensorDataRow[]>([]);
 
   /* Get and set characteristic */
   const sensorDataCharacteristic = useCharacteristic(
@@ -25,7 +24,7 @@ export const DataCollectionPage = () => {
   );
 
   /* Set up event listener for notifications */
-  useSensorData(sensorDataCharacteristic, elapsedMillis, elapsedPaused, setElapsedSeconds, sensorDataRef, setSensorDataPreview);
+  const sensorDataRef = useSensorData(sensorDataCharacteristic, setSensorDataPreview, setElapsedSeconds, elapsedMillis, elapsedPaused);
 
   /* Stop/start notifications based on pause/resume button */
   useCharacteristicNotifications(sensorDataCharacteristic, isPaused);
