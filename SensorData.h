@@ -10,6 +10,9 @@
  * Ideally, we would be able to determine the number of entries programmatically. */
 #define NUM_SENSOR_DATA_ENTRIES 8
 
+/* 3 acceleration + 3 gyroscope = 6 */
+#define NUM_FEATURES 6
+
 /* 4 + 12 + 12 = 28 bytes */
 struct SensorData {
   unsigned long milliseconds;

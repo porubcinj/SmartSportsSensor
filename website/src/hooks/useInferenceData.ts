@@ -1,19 +1,14 @@
 import { useEffect, useRef } from 'react';
+import { InferenceDataRow, Side, Spin, Stroke } from '../models/InferenceDataRow';
 
 export const useInferenceData = (
   inferenceCharacteristic: BluetoothRemoteGATTCharacteristic | null,
-  setPrediction: React.Dispatch<React.SetStateAction<DataView<ArrayBufferLike> | null>>,
+  setInferenceDataPreview: React.Dispatch<React.SetStateAction<InferenceDataRow[]>>  ,
   setElapsedSeconds: React.Dispatch<React.SetStateAction<number>>,
   elapsedMillis: React.RefObject<number>,
   elapsedPaused: React.RefObject<number>,
 ) => {
-  const inferenceDataRef = useRef<{
-    buffer: Uint8Array;
-    length: number;
-  }>({
-    buffer: new Uint8Array(8),
-    length: 0,
-  });
+  const inferenceDataRef = useRef<InferenceDataRow[]>([]);
 
   useEffect(() => {
     if (!inferenceCharacteristic) {
@@ -36,21 +31,25 @@ export const useInferenceData = (
         setElapsedSeconds(prev => prev + secondsDifference);
       }
 
-      const newData = new Uint8Array(value.buffer);
-      const currentData = inferenceDataRef.current;
+      const dataView = new DataView(value.buffer);
+      const newData: InferenceDataRow[] = [];
+      for (let i = 0; i < dataView.byteLength; i += 12) {
+        if (i + 12 > dataView.byteLength) {
+          break;
+        }
 
-      if (currentData.length + newData.length > currentData.buffer.length) {
-        const newBuffer = new Uint8Array(currentData.buffer.length * 2);
-        newBuffer.set(currentData.buffer);
-        currentData.buffer = newBuffer;
+        newData.push({
+          stroke: dataView.getUint32(i, true) as Stroke,
+          side: dataView.getUint32(i + 4, true) as Side,
+          spin: dataView.getUint32(i + 8, true) as Spin,
+        });
       }
 
       /* Concatenate new sensor data */
-      currentData.buffer.set(newData, currentData.length);
-      currentData.length += newData.length;
+      inferenceDataRef.current = inferenceDataRef.current.concat(newData);
 
       /* Update real-time prediction */
-      setPrediction(value);
+      setInferenceDataPreview(newData);
     };
 
     inferenceCharacteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
