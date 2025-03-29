@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
+import { Button } from '@mui/material';
 import { useBluetooth } from '../BluetoothContext/useBluetooth';
 import { useCharacteristic } from '../hooks/useCharacteristic';
 import { SensorDataPreviewTable } from '../components/SensorDataPreviewTable';
