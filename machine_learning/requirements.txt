@@ -1,6 +1,11 @@
-pandas
+ipykernel
+ipywidgets
+jupyter
 matplotlib
 numpy
-torch
+pandas
+plotly
+scikit-learn
 tensorflow
-ipykernel
+torch
+tqdm
