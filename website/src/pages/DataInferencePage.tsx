@@ -10,6 +10,8 @@ import { SensorDataRow } from '../models/SensorDataRow';
 import { useInferenceData } from '../hooks/useInferenceData';
 import { InferenceDataRow } from '../models/InferenceDataRow';
 import { InferenceDataPreviewTable } from '../components/InferenceDataPreviewTable';
+import {SensorDataGraph} from '../components/DataGraphPreview';
+
 
 export const DataInferencePage = () => {
   const { pairedDevice } = useBluetooth();
@@ -19,6 +21,10 @@ export const DataInferencePage = () => {
   const [inferenceDataPreview, setInferenceDataPreview] = useState<InferenceDataRow[]>([]);
   const elapsedMillis = useRef<number>(0);
   const elapsedPaused = useRef<number>(Date.now());
+
+  const [selectedStroke, setSelectedStroke] = useState<string | null>(null);
+  const [selectedSpin, setSelectedSpin] = useState<string | null>(null);
+  const [selectedSide, setSelectedSide] = useState<string | null>(null);
 
   /* Get and set characteristic */
   const sensorDataCharacteristic = useCharacteristic(
@@ -32,7 +38,7 @@ export const DataInferencePage = () => {
     '00000000-0000-0000-0000-000000000001',
   );
 
-  useSensorData(sensorDataCharacteristic, setSensorDataPreview, setElapsedSeconds, elapsedMillis, elapsedPaused);
+  useSensorData(sensorDataCharacteristic, setSensorDataPreview, setElapsedSeconds, elapsedMillis, elapsedPaused, selectedStroke, selectedSide, selectedSpin);
   const inferenceDataRef = useInferenceData(inferenceCharacteristic, setInferenceDataPreview, setElapsedSeconds, elapsedMillis, elapsedPaused);
 
   /* Stop/start notifications based on pause/resume button */
@@ -82,6 +88,8 @@ export const DataInferencePage = () => {
       <InferenceDataPreviewTable inferenceDataPreview={inferenceDataPreview} />
       <br /><br />
       <SensorDataPreviewTable sensorDataPreview={sensorDataPreview} />
+      <SensorDataGraph sensorDataPreview={sensorDataPreview} />
+
     </>
   );
 };

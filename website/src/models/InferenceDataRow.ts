@@ -4,12 +4,14 @@ export enum Stroke {
   Volley,
   Overhead,
   Count,
+  None,
 };
 
 export enum Side {
   Forehand = 0,
   Backhand,
   Count,
+  None,
 };
 
 export enum Spin {
@@ -17,6 +19,7 @@ export enum Spin {
   Slice,
   Topspin,
   Count,
+  None,
 };
 
 export type InferenceDataRow = {

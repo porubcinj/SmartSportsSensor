@@ -8,7 +8,7 @@ interface SensorDataPreviewTableProps {
 export const SensorDataPreviewTable = ({ sensorDataPreview }: SensorDataPreviewTableProps) => {
     return (
         <TableContainer component={Paper}>
-        <Table stickyHeader size='small' style={{ tableLayout: 'fixed' }}>
+        <Table stickyHeader size='small' style={{ tableLayout: 'fixed'}}>
           <TableHead>
             <TableRow>
               <TableCell>ms</TableCell>

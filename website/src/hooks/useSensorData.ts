@@ -1,14 +1,22 @@
 import { useEffect, useRef } from 'react';
 import { SensorDataRow } from '../models/SensorDataRow';
 
+//   const sensorDataRef =  selectedSide, selectedSpin, selectedStroke);
+
+
+
 export const useSensorData = (
   sensorDataCharacteristic: BluetoothRemoteGATTCharacteristic | null,
   setSensorDataPreview: React.Dispatch<React.SetStateAction<SensorDataRow[]>>,
   setElapsedSeconds: React.Dispatch<React.SetStateAction<number>>,
   elapsedMillis: React.RefObject<number>,
   elapsedPaused: React.RefObject<number>,
-) => {
+  selectedSide: string | null,
+  selectedSpin: string | null,
+  selectedStroke: string | null,
+  ) => {
   const sensorDataRef = useRef<SensorDataRow[]>([]);
+
 
   useEffect(() => {
     if (!sensorDataCharacteristic) {
@@ -37,7 +45,6 @@ export const useSensorData = (
         if (i + 28 > dataView.byteLength) {
           break;
         }
-
         newData.push({
           ms: dataView.getUint32(i, true),
           ax: dataView.getFloat32(i + 4, true),
@@ -46,8 +53,12 @@ export const useSensorData = (
           gx: dataView.getFloat32(i + 16, true),
           gy: dataView.getFloat32(i + 20, true),
           gz: dataView.getFloat32(i + 24, true),
+          stroke: selectedStroke,
+          side: selectedSide,
+          spin: selectedSpin,
         });
       }
+      
 
       sensorDataRef.current = sensorDataRef.current.concat(newData);
       setSensorDataPreview(newData);
@@ -56,7 +67,9 @@ export const useSensorData = (
   sensorDataCharacteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
 
   return () => { sensorDataCharacteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged); };
-  }, [sensorDataCharacteristic]);
+  }, [sensorDataCharacteristic, selectedSide, selectedSpin, selectedStroke]);
+
+        
 
   return sensorDataRef;
 };
