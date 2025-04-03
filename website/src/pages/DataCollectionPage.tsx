@@ -14,12 +14,10 @@ const SelectionGroup = ({
   enumObj, 
   selectedValue, 
   onSelect, 
-  title 
   }: { 
     enumObj: any;
     selectedValue: string | null;
     onSelect: (value: string) => void;
-    title: string;
   }) => {
     const enumKeys = Object.keys(enumObj).filter(key => isNaN(Number(key)) && key !== 'Count');
 
@@ -50,7 +48,7 @@ const SelectionGroup = ({
 export const DataCollectionPage = () => {
   const { pairedDevice } = useBluetooth();
 
-  const [resetGraphKey, setResetGraphKey] = useState(0);
+  const [resetGraphKey] = useState(0);
 
   const [selectedStroke, setSelectedStroke] = useState<string | null>(null);
   const [selectedSpin, setSelectedSpin] = useState<string | null>(null);
@@ -122,19 +120,16 @@ export const DataCollectionPage = () => {
         enumObj={Stroke}
         selectedValue={selectedStroke}
         onSelect={setSelectedStroke}
-        title="Stroke"
       />
       <SelectionGroup
         enumObj={Spin}
         selectedValue={selectedSpin}
         onSelect={setSelectedSpin}
-        title="Spin"
       />
       <SelectionGroup
         enumObj={Side}
         selectedValue={selectedSide}
         onSelect={setSelectedSide}
-        title="Side"
       />
 
       <br></br>

@@ -22,9 +22,9 @@ export const DataInferencePage = () => {
   const elapsedMillis = useRef<number>(0);
   const elapsedPaused = useRef<number>(Date.now());
 
-  const [selectedStroke, setSelectedStroke] = useState<string | null>(null);
-  const [selectedSpin, setSelectedSpin] = useState<string | null>(null);
-  const [selectedSide, setSelectedSide] = useState<string | null>(null);
+  const [selectedStroke] = useState<string | null>(null);
+  const [selectedSpin] = useState<string | null>(null);
+  const [selectedSide] = useState<string | null>(null);
 
   /* Get and set characteristic */
   const sensorDataCharacteristic = useCharacteristic(
