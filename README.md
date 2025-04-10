@@ -48,7 +48,7 @@
 
 ## Data Collection 
 - Click Data Collection 
-- Select hit hypes, application allows for one selection per row of shot type
+- Select hit hypes, application allows for one selection per row of type: [Stroke, Spin, Side]
 
 ![Shot type](assets/shot-type.png)
 
@@ -56,7 +56,6 @@
 - You may pause collection, change shot types, clear options at any point during collection, keep in mind that live reading collects acceleration (x,y,z axis) gyroscope rotations (x,y,z axis) and also shot type even if nothing is selected
 
 ![Live reading](assets/live-graph.png)
-
 
 - You can restart data collection at any point
 - Download the csv of the read data and ensure that it worked properly
