@@ -50,12 +50,12 @@
 - Click Data Collection 
 - Select hit hypes, application allows for one selection per row of shot type
 
-![Shot type](assets/live-graph.png)
+![Shot type](assets/shot-type.png)
 
 - Begin data collection, ensure its working through the live gyroscope and acceleration graphs
 - You may pause collection, change shot types, clear options at any point during collection, keep in mind that live reading collects acceleration (x,y,z axis) gyroscope rotations (x,y,z axis) and also shot type even if nothing is selected
 
-![Live reading](assets/shot-type.png)
+![Live reading](assets/live-graph.png)
 
 
 - You can restart data collection at any point
