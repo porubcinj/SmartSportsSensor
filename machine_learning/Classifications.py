@@ -20,8 +20,8 @@ class Classifications:
         self._num_classes: int = sum(len(self.classifications[k]) for k in self.classifications)
         self._num_features = 6
         self._num_shot_steps = 64
-        self._shot_steps_before_peak = 48
-        self._squared_acceleration_threshold = 4
+        self._shot_steps_before_peak = 36
+        self._squared_acceleration_threshold = 20
 
     @property
     def num_classes(self):
