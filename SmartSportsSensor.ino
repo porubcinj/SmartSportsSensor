@@ -6,7 +6,7 @@
 #include "Model.h"
 #include "SensorData.h"
 #include "Stopwatch.h"
-#include "model_data.h"
+#include "ModelData.h"
 
 /* BLE and State Globals */
 State state = State::Unpaired;
