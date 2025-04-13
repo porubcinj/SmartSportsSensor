@@ -8,7 +8,7 @@ import { formatTime } from '../utils/formatTime';
 import { useSensorData } from '../hooks/useSensorData';
 import { SensorDataRow } from '../models/SensorDataRow';
 import { useInferenceData } from '../hooks/useInferenceData';
-import { InferenceDataRow } from '../models/InferenceDataRow';
+import { InferenceDataRow, Side, Spin, Stroke } from '../models/InferenceDataRow';
 import { InferenceDataPreviewTable } from '../components/InferenceDataPreviewTable';
 import {SensorDataGraph} from '../components/DataGraphPreview';
 
@@ -38,17 +38,33 @@ export const DataInferencePage = () => {
     '00000000-0000-0000-0000-000000000001',
   );
 
-  useSensorData(sensorDataCharacteristic, setSensorDataPreview, setElapsedSeconds, elapsedMillis, elapsedPaused, selectedStroke, selectedSide, selectedSpin);
+  const sensorDataRef = useSensorData(sensorDataCharacteristic, setSensorDataPreview, setElapsedSeconds, elapsedMillis, elapsedPaused, selectedStroke, selectedSide, selectedSpin);
   const inferenceDataRef = useInferenceData(inferenceCharacteristic, setInferenceDataPreview, setElapsedSeconds, elapsedMillis, elapsedPaused);
 
   /* Stop/start notifications based on pause/resume button */
   useCharacteristicNotifications(sensorDataCharacteristic, isPaused);
   useCharacteristicNotifications(inferenceCharacteristic, isPaused);
 
-  const handleDownload = () => {
-    const csvHeader = 'stroke,side,spin\n';
+  const handleSensorDataDownload = () => {
+    const csvHeader = 'ms,ax,ay,az,gx,gy,gz,stroke,side,spin\n';
+    const csvContent = sensorDataRef.current
+      .map(({ ms, ax, ay, az, gx, gy, gz, stroke, side, spin }) => `${ms},${ax},${ay},${az},${gx},${gy},${gz},${Stroke[stroke] || ''},${Side[side] || ''},${Spin[spin] || ''}`)
+      .join('\n');
+    const blob = new Blob([csvHeader + csvContent], { type: 'text/csv' });
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'sensor_data.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  };
+
+  const handleInferenceDataDownload = () => {
+    const csvHeader = 'ms,stroke,side,spin\n';
     const csvContent = inferenceDataRef.current
-      .map(({ stroke,side,spin }) => `${stroke},${side},${spin}`)
+      .map(({ ms,stroke,side,spin }) => `${ms},${Stroke[stroke]},${Side[side]},${Spin[spin]}`)
       .join('\n');
     const blob = new Blob([csvHeader + csvContent], { type: 'text/csv' });
 
@@ -79,7 +95,15 @@ export const DataInferencePage = () => {
       <br /><br />
       <Button
         variant='contained'
-        onClick={handleDownload}
+        onClick={handleSensorDataDownload}
+        disabled={!isPaused || sensorDataRef.current.length <= 0}
+      >
+        Download Sensor Data
+      </Button>
+      <br /><br />
+      <Button
+        variant='contained'
+        onClick={handleInferenceDataDownload}
         disabled={!isPaused || inferenceDataRef.current.length <= 0}
       >
         Download Inference Data
@@ -88,8 +112,8 @@ export const DataInferencePage = () => {
       <InferenceDataPreviewTable inferenceDataPreview={inferenceDataPreview} />
       <br /><br />
       <SensorDataPreviewTable sensorDataPreview={sensorDataPreview} />
+      <br /><br />
       <SensorDataGraph sensorDataPreview={sensorDataPreview} />
-
     </>
   );
 };

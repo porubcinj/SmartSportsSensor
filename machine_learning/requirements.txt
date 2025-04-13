@@ -4,7 +4,7 @@ jupyter
 matplotlib
 numpy
 pandas
-plotly
 scikit-learn
+scipy
 tensorflow
 tqdm

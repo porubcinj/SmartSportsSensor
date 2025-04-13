@@ -11,14 +11,16 @@ export const InferenceDataPreviewTable = ({ inferenceDataPreview }: InferenceDat
         <Table stickyHeader size='small' style={{ tableLayout: 'fixed' }}>
           <TableHead>
             <TableRow>
-              <TableCell>Stroke</TableCell>
-              <TableCell>Side</TableCell>
-              <TableCell>Spin</TableCell>
+              <TableCell>ms</TableCell>
+              <TableCell>stroke</TableCell>
+              <TableCell>side</TableCell>
+              <TableCell>spin</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {inferenceDataPreview.map((row, index) => (
               <TableRow key={index}>
+                <TableCell>{row.ms}</TableCell>
                 <TableCell>{Stroke[row.stroke]}</TableCell>
                 <TableCell>{Side[row.side]}</TableCell>
                 <TableCell>{Spin[row.spin]}</TableCell>

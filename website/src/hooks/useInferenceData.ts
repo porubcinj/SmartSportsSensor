@@ -33,15 +33,16 @@ export const useInferenceData = (
 
       const dataView = new DataView(value.buffer);
       const newData: InferenceDataRow[] = [];
-      for (let i = 0; i < dataView.byteLength; i += 12) {
-        if (i + 12 > dataView.byteLength) {
+      for (let i = 0; i < dataView.byteLength; i += 16) {
+        if (i + 16 > dataView.byteLength) {
           break;
         }
 
         newData.push({
-          stroke: dataView.getUint32(i, true) as Stroke,
-          side: dataView.getUint32(i + 4, true) as Side,
-          spin: dataView.getUint32(i + 8, true) as Spin,
+          ms: dataView.getUint32(i, true),
+          stroke: dataView.getUint32(i + 4, true) as Stroke,
+          side: dataView.getUint32(i + 8, true) as Side,
+          spin: dataView.getUint32(i + 12, true) as Spin,
         });
       }
 

@@ -25,7 +25,7 @@ struct SensorDataCharacteristic {
 };
 
 struct SensorDataBuffer {
-  size_t i;
+  int i;
   SensorDataCharacteristic characteristic;
 };
 
