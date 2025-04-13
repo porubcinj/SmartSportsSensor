@@ -7,22 +7,21 @@ import { useCharacteristic } from '../hooks/useCharacteristic';
 import { useCharacteristicNotifications } from '../hooks/useCharacteristicNotifications';
 import { formatTime } from '../utils/formatTime';
 import { useSensorData } from '../hooks/useSensorData';
-import { Stroke, Side, Spin } from "../models/InferenceDataRow";
-import {SensorDataGraph} from '../components/DataGraphPreview';
+import { Stroke, Side, Spin } from '../models/InferenceDataRow';
+import { SensorDataGraph } from '../components/DataGraphPreview';
 
 const SelectionGroup = ({ 
-  enumObj, 
-  selectedValue, 
-  onSelect, 
-  }: { 
-    enumObj: any;
-    selectedValue: string | null;
-    onSelect: (value: string) => void;
-  }) => {
-    const enumKeys = Object.keys(enumObj).filter(key => isNaN(Number(key)) && key !== 'Count');
+  enumObj,
+  selectedValue,
+  onSelect,
+}: {
+  enumObj: any;
+  selectedValue: string | null;
+  onSelect: (value: string) => void;
+}) => {
+  const enumKeys = Object.keys(enumObj).filter(key => isNaN(Number(key)) && key !== 'Count');
 
   return (
-   
     <div>
       {enumKeys.map((key) => (
         <button
@@ -47,17 +46,15 @@ const SelectionGroup = ({
 
 export const DataCollectionPage = () => {
   const { pairedDevice } = useBluetooth();
-
   const [resetGraphKey] = useState(0);
-
   const [selectedStroke, setSelectedStroke] = useState<string | null>(null);
-  const [selectedSpin, setSelectedSpin] = useState<string | null>(null);
   const [selectedSide, setSelectedSide] = useState<string | null>(null);
+  const [selectedSpin, setSelectedSpin] = useState<string | null>(null);
   
   const clearAllSelections = () => {
     setSelectedStroke(null);
-    setSelectedSpin(null);
     setSelectedSide(null);
+    setSelectedSpin(null);
   };
 
   const handleRestart = () => {
@@ -68,11 +65,9 @@ export const DataCollectionPage = () => {
     elapsedMillis.current = 0; // Reset millis counter
     elapsedPaused.current = Date.now(); // Reset pause reference
 
-    clearAllSelections()
-    
+    clearAllSelections();
   };
 
-  
   const [isPaused, setIsPaused] = useState(true);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [sensorDataPreview, setSensorDataPreview] = useState<SensorDataRow[]>([]);
@@ -87,16 +82,15 @@ export const DataCollectionPage = () => {
   );
 
   /* Set up event listener for notifications */
-  
   const sensorDataRef = useSensorData(sensorDataCharacteristic, setSensorDataPreview, setElapsedSeconds, elapsedMillis, elapsedPaused, selectedStroke, selectedSide, selectedSpin);
 
   /* Stop/start notifications based on pause/resume button */
   useCharacteristicNotifications(sensorDataCharacteristic, isPaused);
 
-  const handleDownload = () => {
-    const csvHeader = 'ms,ax,ay,az,gx,gy,gz,stroke,spin,side\n';
+  const handleSensorDataDownload = () => {
+    const csvHeader = 'ms,ax,ay,az,gx,gy,gz,stroke,side,spin\n';
     const csvContent = sensorDataRef.current
-      .map(({ ms, ax, ay, az, gx, gy, gz, stroke, side, spin }) => `${ms},${ax},${ay},${az},${gx},${gy},${gz},${stroke || ''},${side || ''},${spin || ''}`)
+      .map(({ ms, ax, ay, az, gx, gy, gz, stroke, side, spin }) => `${ms},${ax},${ay},${az},${gx},${gy},${gz},${Stroke[stroke] || ''},${Side[side] || ''},${Spin[spin] || ''}`)
       .join('\n');
     const blob = new Blob([csvHeader + csvContent], { type: 'text/csv' });
 
@@ -108,7 +102,6 @@ export const DataCollectionPage = () => {
     document.body.removeChild(link);
     URL.revokeObjectURL(link.href);
   };
-
 
   return (
     <>
@@ -122,14 +115,14 @@ export const DataCollectionPage = () => {
         onSelect={setSelectedStroke}
       />
       <SelectionGroup
-        enumObj={Spin}
-        selectedValue={selectedSpin}
-        onSelect={setSelectedSpin}
-      />
-      <SelectionGroup
         enumObj={Side}
         selectedValue={selectedSide}
         onSelect={setSelectedSide}
+      />
+      <SelectionGroup
+        enumObj={Spin}
+        selectedValue={selectedSpin}
+        onSelect={setSelectedSpin}
       />
 
       <br></br>
@@ -181,7 +174,6 @@ export const DataCollectionPage = () => {
       >
         Restart Collection
       </Button>
-
     </>
   );
 };

@@ -12,12 +12,13 @@ class Classifications:
                 "backhand",
             ),
             "spin": (
+                "topspin",
                 "flat",
                 "slice",
-                "topspin",
             ),
         }
         self._num_classes: int = sum(len(self.classifications[k]) for k in self.classifications)
+        self._num_sensor_data_entries = 8
         self._num_features = 6
         self._num_shot_steps = 64
         self._shot_steps_before_peak = 36
@@ -32,6 +33,10 @@ class Classifications:
         return self._num_features
 
     @property
+    def num_sensor_data_entries(self):
+        return self._num_sensor_data_entries
+
+    @property
     def num_shot_steps(self):
         return self._num_shot_steps
 
@@ -42,14 +47,6 @@ class Classifications:
     @property
     def shot_steps_after_peak(self):
         return self.num_shot_steps - self.shot_steps_before_peak - 1
-
-    @property
-    def zscore_steps_before_peak(self):
-        return self.num_shot_steps
-
-    @property
-    def zscore_steps_after_peak(self):
-        return self.num_shot_steps - 1
 
     @property
     def squared_acceleration_threshold(self):

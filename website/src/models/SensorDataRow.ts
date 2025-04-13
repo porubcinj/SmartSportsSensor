@@ -1,3 +1,5 @@
+import { Stroke, Side, Spin } from "./InferenceDataRow";
+
 export type SensorDataRow = {
   ms: number;
   ax: number;
@@ -6,8 +8,7 @@ export type SensorDataRow = {
   gx: number;
   gy: number;
   gz: number;
-  stroke: string | null; 
-  side: string | null; 
-  spin: string | null; 
-  
+  stroke: Stroke;
+  side: Side;
+  spin: Spin;
 };
