@@ -1,5 +1,11 @@
 # CSE 60685 Design Project - Smart Sports Sensor
 
+Web App: <https://porubcinj.github.io/SmartSportsSensor>
+
+## Overview
+
+There are three main parts of this repository: the Arduino sketch, the web app, and the machine learning code. All Arduino code is in the root folder; the Arduino sketch is at [SmartSportsSensor.ino](SmartSportsSensor.ino). The web app code is in the [website](website/) folder. The machine learning code is located in [machine_learning](machine_learning/). For more information on the website or machine learning code, refer to the README files in their respective folders.
+
 ## Requirements
 
 ### Hardware
@@ -20,46 +26,28 @@
 1. [ArduinoBLE] ([source](https://github.com/arduino-libraries/ArduinoBLE))
 1. [MicroTFLite] ([source](https://github.com/johnosbb/MicroTFLite))
 
+## Setup
+
+### Arduino
+
+Upload [SmartSportsSensor.ino](SmartSportsSensor.ino) to the Arduino Nano 33 BLE Rev2. Refer to [this guide](https://docs.arduino.cc/software/ide-v2/tutorials/getting-started/ide-v2-uploading-a-sketch/) for help.
+
+Once uploaded, you can disconnect the Arduino from your computer and connect it with a battery. Ensure that the Arduino is:
+
+- Connected to a battery (blue light is on).
+- Securely mounted to the racket.
+
+![Mount Sample](assets/ArduinoMountV2.jpg)
+
+If the Arduino is properly powered on, you should see a blue light turn on. A blinking blue light indicates that the Arduino is ready to pair over Bluetooth Low Energy. A solid blue light indicates that it is paired.
+
+## TODO
+
+1. Need directions for training model, live inference, more photos of collection
+
 [Arduino Nano 33 BLE Rev2]: https://docs.arduino.cc/hardware/nano-33-ble-rev2/
 [Arduino IDE 2]: https://docs.arduino.cc/software/ide/
 [ArduinoCore-mbed]: https://docs.arduino.cc/software/ide-v1/tutorials/getting-started/cores/arduino-mbed_nano/
 [Arduino_BMI270_BMM150]: https://docs.arduino.cc/libraries/arduino_bmi270_bmm150/
 [ArduinoBLE]: https://docs.arduino.cc/libraries/arduinoble/
 [MicroTFLite]: https://docs.arduino.cc/libraries/microtflite/
-
-## Hardware connection
-
-1. Ensure that the arduino is:
-- Connected to a battery (Blue light is on)
-- Securely mounted to the racquet
-
-![Mount Sample](assets/ArduinoMountV2.jpg)
-
-## Website application (https://porubcinj.github.io/SmartSportsSensor/#/) 
-1. Can clone repository or just follow website above (and skip to step 8).
-2. Clone the repository 
-3. Ensure you have software / hardware for arduino installed on your device (listed above) 
-4. Follow directory to the "website" folder 
-5. Install dependencies with "npm install" followed by "npm run dev"
-6. Run command npm run dev
-7. Follow link to localhost
-8. Power on your arduino, blinking blue light indicates its waiting to be connected to bluetooth
-9. Scan for device on the website and connect to arduino 
-
-## Data Collection 
-- Click Data Collection 
-- Select hit hypes, application allows for one selection per row of type: [Stroke, Spin, Side]
-
-![Shot type](assets/shot-type.png)
-
-- Begin data collection, ensure its working through the live gyroscope and acceleration graphs
-- You may pause collection, change shot types, clear options at any point during collection, keep in mind that live reading collects acceleration (x,y,z axis) gyroscope rotations (x,y,z axis) and also shot type even if nothing is selected
-
-![Live reading](assets/live-graph.png)
-
-- You can restart data collection at any point
-- Download the csv of the read data and ensure that it worked properly
-  
-
-## TODO: Need directions for training model, live inference, more photos of collection!
-

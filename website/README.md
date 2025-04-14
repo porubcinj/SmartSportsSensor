@@ -1,50 +1,24 @@
-# React + TypeScript + Vite
+# Smart Sports Sensor - Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+To use the web app, a Bluetooth-compatible web browser is required. Check compatibility [here](https://developer.mozilla.org/en-US/docs/Web/API/Web_Bluetooth_API#browser_compatibility).
 
-Currently, two official plugins are available:
+On [the main page](https://porubcinj.github.io/SmartSportsSensor), scan for Bluetooth devices and select the Arduino. The web app supports data collection and inference.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Data Collection
 
-## Expanding the ESLint configuration
+- Click Data Collection.
+- Select shot types; you can choose between various kinds of strokes, sides, and spins.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+![Shot type](../assets/shot-type.png)
 
-- Configure the top-level `parserOptions` property like this:
+- Begin data collection, ensure its working through the live gyroscope and acceleration graphs.
+- You may pause collection, change shot types, or clear options at any point during collection. Keep in mind that live reading collects acceleration (x, y, z axis) gyroscope rotations (x, y, z axis) and also shot type even if nothing is selected.
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+![Live reading](../assets/live-graph.png)
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+- When paused, you can download the CSV of the collected data.
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Setup for Local Development
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+1. Install dependencies with `npm ci`.
+1. Run `npm run dev` to run the web app locally at <http://localhost:5173/SmartSportsSensor>.
