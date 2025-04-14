@@ -33,7 +33,7 @@ InferenceDataBuffer inferenceDataBuffer = {0};
 void setup() {
   /* Initialize Universal Asynchronous Receiver-Transmitter (UART) */
   Serial.begin(9600);
-  while (!Serial);
+  //while (!Serial);
   Serial.println("Serial connected");
 
   /* Set pin modes */
