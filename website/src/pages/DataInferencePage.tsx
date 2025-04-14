@@ -22,9 +22,9 @@ export const DataInferencePage = () => {
   const elapsedMillis = useRef<number>(0);
   const elapsedPaused = useRef<number>(Date.now());
 
-  const [selectedStroke] = useState<string | null>(null);
-  const [selectedSpin] = useState<string | null>(null);
-  const [selectedSide] = useState<string | null>(null);
+  const [selectedStroke] = useState<Stroke | null>(null);
+  const [selectedSide] = useState<Side | null>(null);
+  const [selectedSpin] = useState<Spin | null>(null);
 
   /* Get and set characteristic */
   const sensorDataCharacteristic = useCharacteristic(
@@ -48,7 +48,7 @@ export const DataInferencePage = () => {
   const handleSensorDataDownload = () => {
     const csvHeader = 'ms,ax,ay,az,gx,gy,gz,stroke,side,spin\n';
     const csvContent = sensorDataRef.current
-      .map(({ ms, ax, ay, az, gx, gy, gz, stroke, side, spin }) => `${ms},${ax},${ay},${az},${gx},${gy},${gz},${Stroke[stroke] || ''},${Side[side] || ''},${Spin[spin] || ''}`)
+      .map(({ ms, ax, ay, az, gx, gy, gz, stroke, side, spin }) => `${ms},${ax},${ay},${az},${gx},${gy},${gz},${stroke !== null ? Stroke[stroke] : ''},${side !== null ? Side[side] : ''},${spin !== null ? Spin[spin] : ''}`)
       .join('\n');
     const blob = new Blob([csvHeader + csvContent], { type: 'text/csv' });
 

@@ -8,7 +8,7 @@ export type SensorDataRow = {
   gx: number;
   gy: number;
   gz: number;
-  stroke: Stroke;
-  side: Side;
-  spin: Spin;
+  stroke: Stroke | null;
+  side: Side | null;
+  spin: Spin | null;
 };

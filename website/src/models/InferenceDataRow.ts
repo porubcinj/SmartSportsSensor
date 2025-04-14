@@ -1,5 +1,5 @@
 export enum Stroke {
-  Serve = 0,
+  Serve,
   Groundstroke,
   Volley,
   Overhead,
@@ -7,13 +7,13 @@ export enum Stroke {
 };
 
 export enum Side {
-  Forehand = 0,
+  Forehand,
   Backhand,
   Count,
 };
 
 export enum Spin {
-  Topspin = 0,
+  Topspin,
   Flat,
   Slice,
   Count,
