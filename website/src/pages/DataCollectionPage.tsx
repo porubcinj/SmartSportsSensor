@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Button } from '@mui/material';
+import { Box, Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { useBluetooth } from '../BluetoothContext/useBluetooth';
 import { SensorDataRow } from '../models/SensorDataRow';
 import { SensorDataPreviewTable } from '../components/SensorDataPreviewTable';
@@ -9,48 +9,25 @@ import { formatTime } from '../utils/formatTime';
 import { useSensorData } from '../hooks/useSensorData';
 import { Stroke, Side, Spin } from '../models/InferenceDataRow';
 import { SensorDataGraph } from '../components/DataGraphPreview';
-
-const SelectionGroup = ({ 
-  enumObj,
-  selectedValue,
-  onSelect,
-}: {
-  enumObj: any;
-  selectedValue: string | null;
-  onSelect: (value: string) => void;
-}) => {
-  const enumKeys = Object.keys(enumObj).filter(key => isNaN(Number(key)) && key !== 'Count');
-
-  return (
-    <div>
-      {enumKeys.map((key) => (
-        <button
-          key={key}
-          onClick={() => onSelect(key)}
-          style={{
-            backgroundColor: selectedValue === key ? 'grey' : 'white',
-            color: selectedValue === key ? 'white' : 'black',
-            margin: '5px',
-            padding: '10px',
-            border: '1px solid black',
-            cursor: 'pointer',
-          }}
-        >
-          {key}
-        </button>
-      ))}
-    </div>
-  );
-};
-
+import { EnumSelect } from '../components/EnumSelect';
 
 export const DataCollectionPage = () => {
   const { pairedDevice } = useBluetooth();
   const [resetGraphKey] = useState(0);
-  const [selectedStroke, setSelectedStroke] = useState<string | null>(null);
-  const [selectedSide, setSelectedSide] = useState<string | null>(null);
-  const [selectedSpin, setSelectedSpin] = useState<string | null>(null);
-  
+  const [selectedStroke, setSelectedStroke] = useState<Stroke | null>(null);
+  const [selectedSide, setSelectedSide] = useState<Side | null>(null);
+  const [selectedSpin, setSelectedSpin] = useState<Spin | null>(null);
+
+  const enumToOptions = (enumObj: any) => {
+    return Object.keys(enumObj)
+      .filter((key) => isNaN(Number(key)) && key !== 'Count')
+      .map((key) => ({ label: key, value: enumObj[key as keyof typeof enumObj] }));
+  };
+
+  const strokeOptions = enumToOptions(Stroke);
+  const sideOptions = enumToOptions(Side);
+  const spinOptions = enumToOptions(Spin);
+
   const clearAllSelections = () => {
     setSelectedStroke(null);
     setSelectedSide(null);
@@ -58,14 +35,12 @@ export const DataCollectionPage = () => {
   };
 
   const handleRestart = () => {
-    setIsPaused(true); // Stop data collection
-    sensorDataRef.current = []; // Clear stored data
-    setSensorDataPreview([]); // Clear preview table
-    setElapsedSeconds(0); // Reset timer display
-    elapsedMillis.current = 0; // Reset millis counter
-    elapsedPaused.current = Date.now(); // Reset pause reference
-
-    clearAllSelections();
+    setIsPaused(true);
+    sensorDataRef.current = [];
+    setSensorDataPreview([]);
+    setElapsedSeconds(0);
+    elapsedMillis.current = 0;
+    elapsedPaused.current = Date.now();
   };
 
   const [isPaused, setIsPaused] = useState(true);
@@ -90,7 +65,7 @@ export const DataCollectionPage = () => {
   const handleSensorDataDownload = () => {
     const csvHeader = 'ms,ax,ay,az,gx,gy,gz,stroke,side,spin\n';
     const csvContent = sensorDataRef.current
-      .map(({ ms, ax, ay, az, gx, gy, gz, stroke, side, spin }) => `${ms},${ax},${ay},${az},${gx},${gy},${gz},${Stroke[stroke] || ''},${Side[side] || ''},${Spin[spin] || ''}`)
+      .map(({ ms, ax, ay, az, gx, gy, gz, stroke, side, spin }) => `${ms},${ax},${ay},${az},${gx},${gy},${gz},${stroke !== null ? Stroke[stroke] : ''},${side !== null ? Side[side] : ''},${spin !== null ? Spin[spin] : ''}`)
       .join('\n');
     const blob = new Blob([csvHeader + csvContent], { type: 'text/csv' });
 
@@ -106,71 +81,71 @@ export const DataCollectionPage = () => {
   return (
     <>
       <h1>Smart Sports Sensor</h1>
-
-      <h3>Select hit type:</h3>
-
-      <SelectionGroup
-        enumObj={Stroke}
-        selectedValue={selectedStroke}
-        onSelect={setSelectedStroke}
-      />
-      <SelectionGroup
-        enumObj={Side}
-        selectedValue={selectedSide}
-        onSelect={setSelectedSide}
-      />
-      <SelectionGroup
-        enumObj={Spin}
-        selectedValue={selectedSpin}
-        onSelect={setSelectedSpin}
-      />
-
-      <br></br>
-
-      <Button variant="contained" onClick={clearAllSelections} style = {{background: 'red'}}>
+      <h3>Select shot type:</h3>
+      <Box display="flex" justifyContent="center" gap={2} flexWrap="wrap">
+        <EnumSelect
+          label="Stroke"
+          value={selectedStroke}
+          onChange={setSelectedStroke}
+          options={strokeOptions}
+        />
+        <EnumSelect
+          label="Side"
+          value={selectedSide}
+          onChange={setSelectedSide}
+          options={sideOptions}
+        />
+        <EnumSelect
+          label="Spin"
+          value={selectedSpin}
+          onChange={setSelectedSpin}
+          options={spinOptions}
+        />
+      </Box>
+      <br /><br />
+      <Button
+        variant="contained"
+        onClick={clearAllSelections}
+        style={{
+          background: 'red',
+          color: 'white',
+        }}
+      >
         Clear Options
       </Button>
-
-      <br></br> 
-      <br></br>
-      <br></br>
+      <br />
+      <h2>{formatTime(elapsedSeconds)}</h2>
       <Button
-          variant='contained'
-          onClick={handleDownload}
-          disabled={!isPaused || sensorDataRef.current.length <= 0}
-        >
-          Download Sensor Data
-        </Button>
-
-      <div style={{ 
-          display: 'flex', 
-          gap: '10px', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-        }}>
-
-        <h2>{formatTime(elapsedSeconds)}</h2>
-
-        <Button
-          variant='contained'
-          onClick={() => {
-            if (isPaused) {
-              elapsedPaused.current = Date.now() - elapsedMillis.current;
-            }
-            setIsPaused(prev => !prev);
-          }}
-        >
-          {isPaused ? (sensorDataRef.current.length > 0 ? 'Resume': 'Begin') : 'Pause'}
-        </Button>
-      </div>
-
+        variant='contained'
+        onClick={() => {
+          if (isPaused) {
+            elapsedPaused.current = Date.now() - elapsedMillis.current;
+          }
+          setIsPaused(prev => !prev);
+        }}
+      >
+        {isPaused ? (sensorDataRef.current.length > 0 ? 'Resume': 'Begin') : 'Pause'}
+      </Button>
+      <br /><br />
+      <Button
+        variant='contained'
+        onClick={handleSensorDataDownload}
+        disabled={!isPaused || sensorDataRef.current.length <= 0}
+      >
+        Download Sensor Data
+      </Button>
+      <br /><br />
       <SensorDataPreviewTable sensorDataPreview={sensorDataPreview} />
+      <br /><br />
       <SensorDataGraph sensorDataPreview={sensorDataPreview} key={resetGraphKey} />
-
+      <br />
       <Button
         variant='contained'
         onClick={handleRestart}
-        style={{ margin: '5px', background: 'red', color: 'white'}}
+        style={{
+          background: 'red',
+          color: 'white',
+        }}
       >
         Restart Collection
       </Button>

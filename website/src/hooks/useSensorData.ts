@@ -1,9 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { SensorDataRow } from '../models/SensorDataRow';
-
-//   const sensorDataRef =  selectedSide, selectedSpin, selectedStroke);
-
-
+import { Stroke, Side, Spin } from '../models/InferenceDataRow';
 
 export const useSensorData = (
   sensorDataCharacteristic: BluetoothRemoteGATTCharacteristic | null,
@@ -11,12 +8,11 @@ export const useSensorData = (
   setElapsedSeconds: React.Dispatch<React.SetStateAction<number>>,
   elapsedMillis: React.RefObject<number>,
   elapsedPaused: React.RefObject<number>,
-  selectedSide: string | null,
-  selectedSpin: string | null,
-  selectedStroke: string | null,
-  ) => {
+  selectedStroke: Stroke | null,
+  selectedSide: Side | null,
+  selectedSpin: Spin | null,
+) => {
   const sensorDataRef = useRef<SensorDataRow[]>([]);
-
 
   useEffect(() => {
     if (!sensorDataCharacteristic) {
@@ -53,23 +49,20 @@ export const useSensorData = (
           gx: dataView.getFloat32(i + 16, true),
           gy: dataView.getFloat32(i + 20, true),
           gz: dataView.getFloat32(i + 24, true),
-          stroke: selectedStroke,
-          side: selectedSide,
-          spin: selectedSpin,
+          stroke: selectedStroke !== null ? selectedStroke : null,
+          side: selectedSide !== null ? selectedSide : null,
+          spin: selectedSpin !== null ? selectedSpin : null,
         });
       }
-      
 
       sensorDataRef.current = sensorDataRef.current.concat(newData);
       setSensorDataPreview(newData);
     };
 
-  sensorDataCharacteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
+    sensorDataCharacteristic.addEventListener('characteristicvaluechanged', handleCharacteristicValueChanged);
 
-  return () => { sensorDataCharacteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged); };
-  }, [sensorDataCharacteristic, selectedSide, selectedSpin, selectedStroke]);
-
-        
+    return () => { sensorDataCharacteristic.removeEventListener('characteristicvaluechanged', handleCharacteristicValueChanged); };
+  }, [sensorDataCharacteristic, selectedStroke, selectedSide, selectedSpin]);
 
   return sensorDataRef;
 };
