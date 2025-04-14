@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { Box, Button, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, Button } from '@mui/material';
 import { useBluetooth } from '../BluetoothContext/useBluetooth';
 import { SensorDataRow } from '../models/SensorDataRow';
 import { SensorDataPreviewTable } from '../components/SensorDataPreviewTable';
