@@ -2,3 +2,4 @@
 libraries
 .venv/
 __pycache__/
+*.keras
