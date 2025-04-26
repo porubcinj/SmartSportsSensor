@@ -10,7 +10,7 @@ class Classifications:
             ("volley", side, "slice") for side in ("forehand", "backhand")
         ] + [
             ("overhead", side, spin)
-            for side in ("forehand", "backhand")
+            for side in ("forehand",)
             for spin in ("flat", "slice")
         ])
         self.class_to_idx = {cls: idx for idx, cls in enumerate(self.classes)}
