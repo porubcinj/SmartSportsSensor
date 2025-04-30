@@ -7,4 +7,5 @@ pandas
 scikit-learn
 scipy
 tensorflow
+tensorflow-metal
 tqdm

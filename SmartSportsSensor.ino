@@ -5,7 +5,7 @@
 #include "Ble.h"
 #include "Model.h"
 #include "ModelData.h"
-#include "Preprocessing.h"
+#include "Scaler.h"
 #include "SensorData.h"
 #include "Stopwatch.h"
 
@@ -163,17 +163,17 @@ void pairedState() {
       }
 
       /* Z-score normalize characteristic data */
-      float data[NUM_FEATURES][NUM_SENSOR_DATA_ENTRIES];
       for (int i = 0; i < NUM_SENSOR_DATA_ENTRIES; ++i) {
         const SensorData& d = sensorData.characteristic.data[i];
-        data[0][i] = d.acceleration.x;
-        data[1][i] = d.acceleration.y;
-        data[2][i] = d.acceleration.z;
-        data[3][i] = d.gyroscope.x;
-        data[4][i] = d.gyroscope.y;
-        data[5][i] = d.gyroscope.z;
+        inferenceDataBuffer.normalizedSensorData[inferenceDataBuffer.i][0][i] = (d.acceleration.x - mean_[0]) / scale_[0];
+        inferenceDataBuffer.normalizedSensorData[inferenceDataBuffer.i][1][i] = (d.acceleration.y - mean_[1]) / scale_[1];
+        inferenceDataBuffer.normalizedSensorData[inferenceDataBuffer.i][2][i] = (d.acceleration.z - mean_[2]) / scale_[2];
+        inferenceDataBuffer.normalizedSensorData[inferenceDataBuffer.i][3][i] = (d.gyroscope.x - mean_[3]) / scale_[3];
+        inferenceDataBuffer.normalizedSensorData[inferenceDataBuffer.i][4][i] = (d.gyroscope.y - mean_[4]) / scale_[4];
+        inferenceDataBuffer.normalizedSensorData[inferenceDataBuffer.i][5][i] = (d.gyroscope.z - mean_[5]) / scale_[5];
       }
-      zscoreNormalize(data, lastMean, lastVariance, &lastSampleCount, inferenceDataBuffer.normalizedSensorData[inferenceDataBuffer.i++]);
+      ++inferenceDataBuffer.i;
+
       if (inferenceDataBuffer.i >= NUM_INFERENCE_ENTRIES) {
         inferenceDataBuffer.i = 0;
       }
@@ -272,50 +272,4 @@ void pairedState() {
       }
     }
   }
-}
-
-/* Adapted from sklearn.preprocessing.StandardScaler.partial_fit */
-void zscoreNormalize(const float data[NUM_FEATURES][NUM_SENSOR_DATA_ENTRIES], double lastMean[NUM_FEATURES], double lastVariance[NUM_FEATURES], long* lastSampleCount, float result[NUM_FEATURES][NUM_SENSOR_DATA_ENTRIES]) {
-  const long updatedSampleCount = (*lastSampleCount) + NUM_SENSOR_DATA_ENTRIES;
-  for (int f = 0; f < NUM_FEATURES; ++f) {
-    const double lastSum = lastMean[f] * (*lastSampleCount);
-    double newSum = 0;
-    for (int i = 0; i < NUM_SENSOR_DATA_ENTRIES; ++i) {
-      newSum += data[f][i];
-    }
-    const double updatedMean = (lastSum + newSum) / updatedSampleCount;
-    const double T = newSum / NUM_SENSOR_DATA_ENTRIES;
-
-    double correction = 0;
-    double newUnnormalizedVariance = 0;
-    for (int i = 0; i < NUM_SENSOR_DATA_ENTRIES; ++i) {
-      result[f][i] = data[f][i] - T;
-      correction += result[f][i];
-      result[f][i] = sq(result[f][i]);
-      newUnnormalizedVariance += result[f][i];
-    }
-
-    newUnnormalizedVariance -= sq(correction) / NUM_SENSOR_DATA_ENTRIES;
-    const double lastUnnormalizedVariance = lastVariance[f] * (*lastSampleCount);
-
-    const double lastOverNewCount = static_cast<double>(*lastSampleCount) / NUM_SENSOR_DATA_ENTRIES;
-    const double updatedUnnormalizedVariance = (*lastSampleCount == 0) ? newUnnormalizedVariance : (
-      lastUnnormalizedVariance
-      + newUnnormalizedVariance
-      + lastOverNewCount
-      / updatedSampleCount
-      * sq(lastSum / lastOverNewCount - newSum)
-    );
-
-    const double updatedVariance = updatedUnnormalizedVariance / updatedSampleCount;
-
-    lastMean[f] = updatedMean;
-    lastVariance[f] = updatedVariance;
-
-    const double invStd = 1.0 / sqrt(updatedVariance);
-    for (int i = 0; i < NUM_SENSOR_DATA_ENTRIES; ++i) {
-      result[f][i] = (data[f][i] - updatedMean) * invStd;
-    }
-  }
-  *lastSampleCount = updatedSampleCount;
 }
