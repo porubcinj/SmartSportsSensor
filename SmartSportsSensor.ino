@@ -8,12 +8,13 @@
 #include "Scaler.h"
 #include "SensorData.h"
 #include "Stopwatch.h"
+#include "Quantization.h"
 
 /* BLE and State Globals */
 State state = State::Unpaired;
 Stopwatch<unsigned long> stopwatchMillis(millis);
 SensorDataBuffer sensorData = {0};
-InferenceCharacteristic inference = {0, Stroke::Count, Side::Count, Spin::Count};
+InferenceCharacteristic inference = {0, Classification::Count};
 BLEDevice central = BLEDevice();
 BLEService service(SERVICE_UUID);
 BLETypedCharacteristic<SensorDataCharacteristic> sensorDataCharacteristic(SENSOR_DATA_CHARACTERISTIC_UUID, BLERead | BLENotify | BLEEncryption);
@@ -21,13 +22,10 @@ BLETypedCharacteristic<InferenceCharacteristic> inferenceCharacteristic(INFERENC
 
 /* Inference Globals */
 constexpr int tensorArenaSize = 26 * 1024;
-alignas(16) byte tensorArena[tensorArenaSize];
+alignas(32) byte tensorArena[tensorArenaSize];
 bool shotDetected = false;
 int numEntriesAfterPeak = 0;
 
-double lastMean[NUM_FEATURES] = {0};
-double lastVariance[NUM_FEATURES] = {0};
-long lastSampleCount = 0;
 InferenceDataBuffer inferenceDataBuffer = {0};
 
 void setup() {
@@ -52,7 +50,7 @@ void setup() {
   while (!BLE.begin()) {
     Serial.println("Failed to initialize Bluetooth Low Energy");
   }
-  BLE.debug(Serial);
+  //BLE.debug(Serial);
 
   /* Set BLE information */
   BLE.setDeviceName(DEVICE_NAME);
@@ -75,6 +73,7 @@ void setup() {
   }
   Serial.println("Model initialization done");
   ModelPrintMetadata();
+  ModelPrintTensorInfo();
 }
 
 void loop() {
@@ -179,18 +178,16 @@ void pairedState() {
       }
 
       /* Check for spike */
-      if (lastSampleCount >= NUM_SHOT_STEPS) {
-        if (shotDetected) {
-          ++numEntriesAfterPeak;
-        } else {
-          for (int i = 0; i < NUM_SENSOR_DATA_ENTRIES; ++i) {
-            const SensorData& d = sensorData.characteristic.data[i];
-            const float accelerationSquared = sq(d.acceleration.x) + sq(d.acceleration.y) + sq(d.acceleration.z);
-            if (accelerationSquared >= SQUARED_ACCELERATION_THRESHOLD) {
-              shotDetected = true;
-              inference.milliseconds = d.milliseconds;
-              break;
-            }
+      if (shotDetected) {
+        ++numEntriesAfterPeak;
+      } else {
+        for (int i = 0; i < NUM_SENSOR_DATA_ENTRIES; ++i) {
+          const SensorData& d = sensorData.characteristic.data[i];
+          const float accelerationSquared = sq(d.acceleration.x) + sq(d.acceleration.y) + sq(d.acceleration.z);
+          if (accelerationSquared >= SQUARED_ACCELERATION_THRESHOLD) {
+            shotDetected = true;
+            inference.milliseconds = d.milliseconds;
+            break;
           }
         }
       }
@@ -212,7 +209,7 @@ void pairedState() {
 
             /* For each sample, copy each feature */
             for (int l = 0; l < NUM_FEATURES; ++l) {
-              ModelSetInput(d[l][k], sampleOffset + l);
+              ModelSetInput(d[l][k], sampleOffset + l, true);
             }
             ++samplesRead;
           }
@@ -224,47 +221,19 @@ void pairedState() {
           return;
         }
 
-        /* Get stroke */
+        /* Get shot classification */
         float maxOutput = 0;
-        unsigned int maxIndex = 0, startIndex, endIndex = static_cast<int>(Stroke::Count);
-        for (startIndex = 0; startIndex < endIndex; ++startIndex) {
-          const float output = ModelGetOutput(startIndex);
+        int maxIndex = 0;
+        for (int i = 0; i < static_cast<int>(Classification::Count); ++i) {
+          const float output = ModelGetOutput(i, true);
           Serial.println(output);
           if (output > maxOutput) {
             maxOutput = output;
-            maxIndex = startIndex;
+            maxIndex = i;
           }
         }
-        inference.stroke = static_cast<Stroke>(maxIndex);
-
-        /* Get side */
-        maxOutput = 0;
-        unsigned int prevEndIndex = endIndex;
-        endIndex += static_cast<int>(Side::Count);
-        maxIndex = 0;
-        for (; startIndex < endIndex; ++startIndex) {
-          const float output = ModelGetOutput(startIndex);
-          Serial.println(output);
-          if (output > maxOutput) {
-            maxOutput = output;
-            maxIndex = startIndex;
-          }
-        }
-        inference.side = static_cast<Side>(maxIndex - prevEndIndex);
-
-        /* Get spin */
-        maxOutput = 0;
-        prevEndIndex = endIndex;
-        endIndex += static_cast<int>(Spin::Count);
-        for (; startIndex < endIndex; ++startIndex) {
-          const float output = ModelGetOutput(startIndex);
-          Serial.println(output);
-          if (output > maxOutput) {
-            maxOutput = output;
-            maxIndex = startIndex;
-          }
-        }
-        inference.spin = static_cast<Spin>(maxIndex - prevEndIndex);
+        inference.classification = static_cast<Classification>(maxIndex);
+        Serial.println(static_cast<int>(inference.classification));
 
         if (!inferenceCharacteristic.writeValue(inference)) {
           Serial.println("Failed to write value to inference characteristic");

@@ -10,32 +10,26 @@
 #define NUM_ENTRIES_AFTER_PEAK (NUM_SHOT_STEPS_AFTER_PEAK / NUM_SENSOR_DATA_ENTRIES)
 #define SQUARED_ACCELERATION_THRESHOLD 20
 
-enum class Stroke : unsigned int {
-  Serve,
-  Groundstroke,
-  Volley,
-  Overhead,
-  Count,
-};
-
-enum class Side : unsigned int {
-  Forehand,
-  Backhand,
-  Count,
-};
-
-enum class Spin : unsigned int {
-  Topspin,
-  Flat,
-  Slice,
+enum class Classification : unsigned int {
+  FlatForehandServe,
+  SliceForehandServe,
+  TopspinForehandServe,
+  FlatForehandGroundstroke,
+  SliceForehandGroundstroke,
+  TopspinForehandGroundstroke,
+  FlatBackhandGroundstroke,
+  SliceBackhandGroundstroke,
+  TopspinBackhandGroundstroke,
+  SliceForehandVolley,
+  SliceBackhandVolley,
+  FlatForehandOverhead,
+  SliceForehandOverhead,
   Count,
 };
 
 struct InferenceCharacteristic {
   unsigned long milliseconds;
-  Stroke stroke;
-  Side side;
-  Spin spin;
+  Classification classification;
 };
 
 struct InferenceDataBuffer {

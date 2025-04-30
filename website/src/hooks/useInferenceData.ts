@@ -1,9 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { InferenceDataRow, Side, Spin, Stroke } from '../models/InferenceDataRow';
+import { Classification, InferenceDataRow, classificationToDetails } from '../models/InferenceDataRow';
 
 export const useInferenceData = (
   inferenceCharacteristic: BluetoothRemoteGATTCharacteristic | null,
-  setInferenceDataPreview: React.Dispatch<React.SetStateAction<InferenceDataRow[]>>  ,
+  setInferenceDataPreview: React.Dispatch<React.SetStateAction<InferenceDataRow[]>>,
   setElapsedSeconds: React.Dispatch<React.SetStateAction<number>>,
   elapsedMillis: React.RefObject<number>,
   elapsedPaused: React.RefObject<number>,
@@ -33,16 +33,20 @@ export const useInferenceData = (
 
       const dataView = new DataView(value.buffer);
       const newData: InferenceDataRow[] = [];
-      for (let i = 0; i < dataView.byteLength; i += 16) {
-        if (i + 16 > dataView.byteLength) {
+      for (let i = 0; i < dataView.byteLength; i += 8) {
+        if (i + 8 > dataView.byteLength) {
           break;
         }
 
+        const ms = dataView.getUint32(i, true);
+        const classification = dataView.getUint32(i + 4, true) as Classification;
+        const { stroke, side, spin } = classificationToDetails(classification);
+
         newData.push({
-          ms: dataView.getUint32(i, true),
-          stroke: dataView.getUint32(i + 4, true) as Stroke,
-          side: dataView.getUint32(i + 8, true) as Side,
-          spin: dataView.getUint32(i + 12, true) as Spin,
+          ms,
+          stroke,
+          side,
+          spin,
         });
       }
 

@@ -1,5 +1,6 @@
 .venv
 *.csv
+csvs/
 !sample_sensor_data.csv
 __pycache__
 .DS_Store
